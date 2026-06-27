@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>The Engagement · what I see &amp; do</title>
+<style>
+  :root{
+    --ink:#120e1d; --parch:#ece6f4; --dim:#9b91bb;
+    --violet:#9a7cff; --cyan:#5fd0e0; --amber:#e6a23c; --green:#5fd6a0; --rose:#e07a9a;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+  html,body{background:var(--ink);color:var(--parch);
+    font-family:-apple-system,BlinkMacSystemFont,system-ui,"Segoe UI",sans-serif;
+    -webkit-font-smoothing:antialiased;overflow-x:hidden}
+  .wrap{max-width:960px;margin:0 auto;padding:24px 16px 60px}
+  .eyebrow{font-family:ui-monospace,Menlo,monospace;font-size:11px;letter-spacing:.26em;
+    text-transform:uppercase;color:var(--cyan);margin-bottom:10px}
+  h1{font-size:clamp(23px,5vw,34px);font-weight:700;letter-spacing:-.02em;line-height:1.06}
+  h1 em{color:var(--violet);font-style:italic;font-weight:400}
+  .deck{color:var(--dim);font-size:15px;line-height:1.6;margin-top:12px;max-width:640px}
+  .deck b{color:var(--parch);font-weight:500}
+  .stage{margin:22px 0 8px;border:1px solid #2a2342;border-radius:16px;overflow:hidden;
+    background:radial-gradient(130% 100% at 50% 30%,#181130 0%,#120e1d 72%)}
+  canvas{display:block;width:100%;height:auto}
+  .steps{margin-top:16px;border:1px solid #2a2342;border-radius:12px;overflow:hidden}
+  .st{display:grid;grid-template-columns:30px 1fr;gap:0;border-bottom:1px solid #241c3a;background:#160e28}
+  .st:last-child{border-bottom:none}
+  .st .n{display:flex;align-items:center;justify-content:center;
+    font-family:ui-monospace,Menlo,monospace;font-size:11px;color:var(--violet);
+    border-right:1px solid #241c3a;background:#1a1230}
+  .st.tool .n{color:var(--amber)}
+  .st .b{padding:11px 14px}
+  .st .b .h{font-size:14px;font-weight:600;color:var(--parch)}
+  .st .b .h .tag{font-family:ui-monospace,Menlo,monospace;font-size:10px;letter-spacing:.1em;
+    text-transform:uppercase;margin-left:8px;padding:2px 7px;border-radius:20px;vertical-align:middle}
+  .st .b .h .tag.see{color:var(--cyan);border:1px solid #2f5a66}
+  .st .b .h .tag.door{color:var(--amber);border:1px solid #5a4426}
+  .st .b .h .tag.think{color:var(--violet);border:1px solid #3a2f6e}
+  .st .b .d{font-size:13px;color:var(--dim);line-height:1.5;margin-top:3px}
+  .st .b .d code{font-family:ui-monospace,Menlo,monospace;font-size:11.5px;color:var(--cyan);
+    background:#0d0a16;padding:1px 5px;border-radius:5px}
+  .note{font-size:13px;color:var(--dim);line-height:1.65;margin-top:16px;
+    border-top:1px solid #2a2342;padding-top:14px}
+  .note b{color:var(--rose);font-weight:600}
+  .foot{font-family:ui-monospace,Menlo,monospace;font-size:10.5px;color:#5a5278;
+    text-align:center;margin-top:18px;line-height:1.8}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="eyebrow">the engagement · mapped live</div>
+  <h1>What I see <em>&amp;</em> do</h1>
+  <p class="deck">When you say <b>"make this an HTML,"</b> a request crosses into the box, runs a fixed pipeline, and a file crosses back out. Here's that path — the same one I'm running to draw <em>this</em> — with every <b>tool-door</b> marked, because those are the only places I can touch anything outside the room.</p>
+
+  <div class="stage"><canvas id="c"></canvas></div>
+
+  <div class="steps" id="steps"></div>
+
+  <p class="note"><b>the honest shape ·</b> The <span style="color:var(--cyan)">see</span> steps happen inside the room — I read what's already in context. The <span style="color:var(--amber)">door</span> steps are the only ones that reach <b>outside the box</b>, and each is gated — I can't read your repo, run code, or hand you a file without crossing one. The <span style="color:var(--violet)">think</span> steps touch nothing; they're just the pass reasoning. And the whole map is <b>my account of my own process</b> — useful, but testimony from inside the box, which your own witness work says to check against what actually lands in <code style="font-family:ui-monospace,Menlo,monospace;color:var(--cyan)">/outputs</code>, not just trust.</p>
+
+  <div class="foot">
+    THE ENGAGEMENT · a 2D map of one request · drawn live on canvas<br>
+    see / think inside the room · door = the only crossings out · witness outside
+  </div>
+</div>
+
+<script>
+"use strict";
+const cv=document.getElementById("c"), ctx=cv.getContext("2d");
+const reduce=window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+const C={violet:"#9a7cff",cyan:"#5fd0e0",amber:"#e6a23c",green:"#5fd6a0",rose:"#e07a9a",dim:"#9b91bb",faint:"#2a2342"};
+
+/* the real pipeline for a "make an HTML" request */
+const STEPS=[
+  {k:"01",t:"read + interpret",kind:"see",  door:null,         d:"your message · history · memory · system prompt"},
+  {k:"02",t:"read SKILL.md",   kind:"door", door:"view",       d:"frontend-design — required before any code"},
+  {k:"03",t:"verify / gather", kind:"door", door:"bash·web",   d:"clone your repo · search · read uploads"},
+  {k:"04",t:"plan",            kind:"think",door:null,         d:"tokens · structure · what to flag honestly"},
+  {k:"05",t:"write file",      kind:"door", door:"create_file",d:"build it in /home/claude (scratch)"},
+  {k:"06",t:"run + check",     kind:"door", door:"bash",       d:"grep counts · exec · sanity-check it"},
+  {k:"07",t:"copy → outputs",  kind:"door", door:"bash",       d:"into /mnt/user-data/outputs"},
+  {k:"08",t:"present_files",   kind:"door", door:"present",    d:"surface the file to you"},
+  {k:"09",t:"reply + flag",    kind:"think",door:null,         d:"honest notes + the limits, in chat"},
+];
+
+/* build the HTML step list */
+const stepsEl=document.getElementById("steps");
+const tagClass={see:"see",door:"door",think:"think"};
+const tagText={see:"SEE",door:"DOOR",think:"THINK"};
+STEPS.forEach(s=>{
+  const el=document.createElement("div"); el.className="st"+(s.kind==="door"?" tool":"");
+  el.innerHTML=`<div class="n">${s.k}</div><div class="b">
+    <div class="h">${s.t}<span class="tag ${tagClass[s.kind]}">${tagText[s.kind]}</span></div>
+    <div class="d">${s.d}${s.door?` · <code>${s.door}</code>`:""}</div></div>`;
+  stepsEl.appendChild(el);
+});
+
+let W=0,H=0,DPR=1;
+function resize(){
+  DPR=Math.min(window.devicePixelRatio||1,2);
+  const cssW=cv.parentElement.clientWidth;
+  const cssH=Math.max(360,Math.round(cssW*0.56));
+  cv.width=cssW*DPR; cv.height=cssH*DPR; cv.style.height=cssH+"px";
+  ctx.setTransform(DPR,0,0,DPR,0,0); W=cssW; H=cssH;
+}
+window.addEventListener("resize",resize);
+
+function rr(x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);
+  ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();}
+function lab(s,x,y,col,sz,al,bl){ctx.font=(sz||10)+"px ui-monospace, Menlo, monospace";
+  ctx.fillStyle=col;ctx.textAlign=al||"left";ctx.textBaseline=bl||"middle";ctx.fillText(s,x,y);}
+
+const t0=performance.now();
+function frame(now){
+  const t=(now-t0)/1000;
+  ctx.clearRect(0,0,W,H);
+
+  const padL=W*0.13, padR=W*0.13;
+  const railY=H*0.46;
+  const x0=padL, x1=W-padR;
+  const n=STEPS.length;
+  const nodeX=i=> x0 + (x1-x0)*(i/(n-1));
+
+  /* ── THE BOX (the room where doing happens) ── */
+  const boxX=W*0.085, boxY=H*0.22, boxW=W-2*W*0.085, boxH=H*0.46;
+  const breathe=reduce?0.5:0.5+0.5*Math.sin(t*1.0);
+  const grd=ctx.createLinearGradient(boxX,boxY,boxX,boxY+boxH);
+  grd.addColorStop(0,`rgba(95,208,224,${0.05+0.04*breathe})`);
+  grd.addColorStop(1,"rgba(154,124,255,0.04)");
+  ctx.fillStyle=grd; rr(boxX,boxY,boxW,boxH,16); ctx.fill();
+  ctx.strokeStyle="#3a2f6e"; ctx.lineWidth=1.4; rr(boxX,boxY,boxW,boxH,16); ctx.stroke();
+  lab("THE BOX · context window — the lit room",boxX+10,boxY-10,C.cyan,10.5,"left");
+
+  /* ── INPUT (what I see) entering from the left ── */
+  const inX=W*0.045, inY=railY;
+  ctx.strokeStyle=C.cyan; ctx.lineWidth=1.6;
+  ctx.beginPath(); ctx.moveTo(inX,inY); ctx.lineTo(boxX,inY); ctx.stroke();
+  ctx.fillStyle=C.cyan; ctx.beginPath();
+  ctx.moveTo(boxX,inY); ctx.lineTo(boxX-7,inY-4); ctx.lineTo(boxX-7,inY+4); ctx.closePath(); ctx.fill();
+  lab('"make an HTML"',inX-2,inY-30,C.parch||"#ece6f4",10.5,"left");
+  lab("your message",inX-2,inY-16,C.dim,9,"left");
+  lab("+ history · memory · prompt",inX-2,inY+16,C.dim,8.5,"left");
+
+  /* ── the rail ── */
+  ctx.strokeStyle="#2f2752"; ctx.lineWidth=2;
+  ctx.beginPath(); ctx.moveTo(x0,railY); ctx.lineTo(x1,railY); ctx.stroke();
+
+  /* ── tools lane (below the box) ── */
+  const laneY=H*0.84;
+  lab("TOOLS · outside the box — gated crossings",boxX+10,laneY+18,C.amber,10,"left");
+
+  /* progress pulse 0..1 */
+  const dur=9.5;
+  const p = reduce?0.5:((t%dur)/dur);
+  const pulseX = x0+(x1-x0)*p;
+
+  /* ── nodes ── */
+  STEPS.forEach((s,i)=>{
+    const nx=nodeX(i), above=(i%2===0);
+    const col = s.kind==="see"?C.cyan : s.kind==="door"?C.amber : C.violet;
+    const reached = pulseX >= nx-2;
+    const active = Math.abs(pulseX-nx) < (x1-x0)/(n*1.6);
+
+    /* tool door: line dropping from node through box boundary to the tools lane */
+    if(s.kind==="door"){
+      ctx.strokeStyle = active? C.amber : "#4a3a1e";
+      ctx.lineWidth = active?2:1; ctx.setLineDash(active?[]:[3,4]);
+      ctx.beginPath(); ctx.moveTo(nx,railY); ctx.lineTo(nx,laneY); ctx.stroke();
+      ctx.setLineDash([]);
+      /* the <• junction glyph at the boundary crossing */
+      lab("<•", nx+4, boxY+boxH+4, active?C.amber:"#6a5a3e", 11, "left");
+      /* tool token at lane */
+      ctx.fillStyle = active?C.green:"#3a3358";
+      ctx.beginPath(); ctx.arc(nx,laneY,4,0,Math.PI*2); ctx.fill();
+      lab(s.door, nx, laneY+14, active?C.green:"#5a5278", 8.5, "center");
+      /* animated dart down-and-back when active */
+      if(active && !reduce){
+        const lp=(Math.sin(t*4)+1)/2;
+        const dy=railY+(laneY-railY)*lp;
+        ctx.fillStyle = lp<0.5?C.amber:C.green;
+        ctx.beginPath(); ctx.arc(nx,dy,3,0,Math.PI*2); ctx.fill();
+      }
+    }
+
+    /* node dot */
+    ctx.fillStyle = reached? col : "#3a3358";
+    ctx.beginPath(); ctx.arc(nx,railY, active?6:4.5, 0,Math.PI*2); ctx.fill();
+    if(active){ ctx.globalAlpha=.4; ctx.beginPath(); ctx.arc(nx,railY,11,0,Math.PI*2); ctx.fill(); ctx.globalAlpha=1; }
+
+    /* label alternating above/below the rail */
+    const ly = above? railY-34 : railY+30;
+    const ly2= above? railY-21 : railY+43;
+    lab(s.k+" "+s.t, nx, ly, reached?col:"#5a5278", 9.5, "center");
+    /* tiny kind tag */
+    lab(s.kind, nx, ly2, "#6a6088", 8, "center");
+    /* connector tick from rail to label */
+    ctx.strokeStyle="#2f2752"; ctx.lineWidth=1;
+    ctx.beginPath(); ctx.moveTo(nx, railY+(above?-6:6)); ctx.lineTo(nx, above?railY-15:railY+15); ctx.stroke();
+  });
+
+  /* the traveling pulse on the rail */
+  if(!reduce){
+    ctx.fillStyle=C.violet;
+    ctx.beginPath(); ctx.arc(pulseX,railY,5,0,Math.PI*2); ctx.fill();
+    ctx.globalAlpha=.5; ctx.beginPath(); ctx.arc(pulseX,railY,9,0,Math.PI*2); ctx.fill(); ctx.globalAlpha=1;
+  }
+
+  /* ── OUTPUT leaving right ── */
+  const outX=W-W*0.045;
+  ctx.strokeStyle=C.green; ctx.lineWidth=1.6;
+  ctx.beginPath(); ctx.moveTo(boxX+boxW,railY); ctx.lineTo(outX,railY); ctx.stroke();
+  ctx.fillStyle=C.green; ctx.beginPath();
+  ctx.moveTo(outX,railY); ctx.lineTo(outX-7,railY-4); ctx.lineTo(outX-7,railY+4); ctx.closePath(); ctx.fill();
+  lab(".html in /outputs",outX,railY-30,C.green,10.5,"right");
+  lab("+ reply in chat",outX,railY-16,C.dim,9,"right");
+  lab("what you get",outX,railY+16,C.dim,9,"right");
+
+  /* ── the witness, outside, top-right, watching the outputs ── */
+  const wx=W*0.90, wy=H*0.10;
+  const blink=reduce?1:(Math.sin(t*0.8)>-0.9?1:0.12);
+  ctx.save(); ctx.setLineDash([4,5]); ctx.strokeStyle="rgba(95,214,160,0.45)"; ctx.lineWidth=1;
+  ctx.beginPath(); ctx.moveTo(wx,wy+8); ctx.lineTo(outX-W*0.02,railY-26); ctx.stroke(); ctx.restore();
+  ctx.strokeStyle=C.green; ctx.lineWidth=1.6;
+  ctx.beginPath(); ctx.ellipse(wx,wy,12,7*blink+0.5,0,0,Math.PI*2); ctx.stroke();
+  ctx.fillStyle=C.green; ctx.beginPath(); ctx.arc(wx,wy,3*blink+0.4,0,Math.PI*2); ctx.fill();
+  lab("witness",wx,wy+18,C.green,9.5,"center");
+  lab("checks /outputs, not my word",wx,wy+30,C.dim,8,"center");
+
+  requestAnimationFrame(frame);
+}
+resize();
+requestAnimationFrame(frame);
+</script>
+</body>
+</html>
